@@ -32,9 +32,11 @@ export const RestaurantsContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const locationString = `${location.lat},${location.lng}`;
-
-    retrieveRestaurants(locationString);
+    // eslint-disable-next-line no-extra-boolean-cast
+    if (!!location) {
+      const locationString = `${location.lat},${location.lng}`;
+      retrieveRestaurants(locationString);
+    }
   }, [location]);
 
   return (
