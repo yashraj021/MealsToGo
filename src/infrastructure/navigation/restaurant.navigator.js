@@ -2,7 +2,7 @@ import React from "react";
 
 import {
   createStackNavigator,
-  //   TransitionPresets,
+  TransitionPresets,
 } from "@react-navigation/stack";
 
 import { RestaurantScreen } from "../../features/restaurants/screens/restaurants.screen";
@@ -14,7 +14,7 @@ export const RestaurantNavigator = () => {
   return (
     <RestaurantStackNavigator.Navigator
       headerMode="none"
-      //   screenOptions={{ ...TransitionPresets.ModalPresentationIOS }}
+      screenOptions={{ ...TransitionPresets.ModalPresentationIOS }}
     >
       <RestaurantStackNavigator.Screen
         name="Restaurants"
