@@ -1,6 +1,6 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useRef } from "react";
 import styled from "styled-components/native";
-import { View, FlatList, TouchableOpacity } from "react-native";
+import { View, FlatList, TouchableOpacity, Animated } from "react-native";
 import { ActivityIndicator, Colors } from "react-native-paper";
 
 import { SafeArea } from "../../../components/utility/safe-area.component";
@@ -13,7 +13,7 @@ import { RestaurantsContext } from "../../../services/restaurants/restaurants.co
 import { FavouritesContext } from "../../../services/favourites/favourites.context";
 import { FavouritesBar } from "../../../components/favourites/favourites-bar.component";
 
-const RestaurantList = styled(FlatList).attrs({
+const RestaurantList = styled(Animated.FlatList).attrs({
   contentContainerStyle: {
     padding: 16,
   },
@@ -30,6 +30,8 @@ const LoadingContainer = styled(View)`
 `;
 
 export const RestaurantScreen = ({ navigation }) => {
+  const scrollY = useRef(new Animated.Value(0)).current;
+
   const { restaurants, isLoading } = useContext(RestaurantsContext);
   const { favourites } = useContext(FavouritesContext);
   const [isToggled, setIsToggled] = useState(false);
@@ -52,23 +54,46 @@ export const RestaurantScreen = ({ navigation }) => {
         />
       )}
       <RestaurantList
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
         data={restaurants}
         inititalNumToRender={5}
-        renderItem={({ item }) => (
-          <>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("RestaurantDetails", {
-                  restaurant: item,
-                })
-              }
+        renderItem={({ item, index }) => {
+          const inputRange = [-1, 0, 320 * index, 320 * (index + 1.5)];
+          const opacityInputRange = [-1, 0, 320 * index, 320 * (index + 0.6)];
+
+          const scale = scrollY.interpolate({
+            inputRange,
+            outputRange: [1, 1, 1, 0],
+          });
+          const scaleOpacity = scrollY.interpolate({
+            inputRange: opacityInputRange,
+            outputRange: [1, 1, 1, 0],
+          });
+
+          return (
+            <Animated.View
+              style={{
+                transform: [{ scale }],
+                opacity: scaleOpacity,
+              }}
             >
-              <Spacer position={"bottom"} size={"large"}>
-                <RestaurantInfoCard restaurant={item} />
-              </Spacer>
-            </TouchableOpacity>
-          </>
-        )}
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("RestaurantDetails", {
+                    restaurant: item,
+                  })
+                }
+              >
+                <Spacer position={"bottom"} size={"large"}>
+                  <RestaurantInfoCard restaurant={item} />
+                </Spacer>
+              </TouchableOpacity>
+            </Animated.View>
+          );
+        }}
         keyExtractor={(item) => item.name}
       />
     </SafeArea>
